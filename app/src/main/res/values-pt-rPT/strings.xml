@@ -24,7 +24,7 @@
     <string name="general_importing" context="state while importing the file">A importar</string>
     <string name="general_import" context="Import button. When the user clicks this button the file will be imported to his account.">Importar</string>
     <string name="general_storage" context="Text listed before the amount of storage a user gets with a certain package. For example: &quot;1TB Storage&quot;.">Armazenamento</string>
-    <string name="general_bandwidth" context="Text listed before the amount of bandwidth a user gets with a certain package. For example: &quot;8TB Bandwidth&quot;. Can also be translated as data transfer.">Dados</string>
+    <string name="general_bandwidth" context="Text listed before the amount of bandwidth a user gets with a certain package. For example: &quot;8TB Bandwidth&quot;. Can also be translated as data transfer.">Largura de Banda</string>
     <string name="general_subscribe" context="Text placed inside the button the user clicks when upgrading to PRO. Meaning: subscribe to this plan">Subscrever</string>
     <string name="general_continue" context="Text placed inside the button the user clicks when clicking into the FREE account. Meaning: Continue to the main screen">Continuar</string>  
     <string name="general_error_word" context="It will be followed by the error message">Erro</string> 
@@ -651,4 +651,6 @@
     <string name="log_out_warning" context="alert when clicking a newsignup link being logged">Por favor termine a sessão antes de criar a conta</string>
     <string name="settings_enable_logs" context="Confirmation message when enabling logs in the app">Os registos estão agora activos</string>
     <string name="settings_disable_logs" context="Confirmation message when disabling logs in the app">Os registos estão agora inactivos</string>
+
+    <string name="limited_bandwith" context="Word to indicate the limited bandwidth of the free accounts">Limitado</string>
 </resources>

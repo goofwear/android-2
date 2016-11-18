@@ -256,11 +256,6 @@ public class MyAccountInfo implements MegaRequestListenerInterface {
                 if (myFL != null) {
                     myFL.setPricing();
                 }
-            } else if (((ManagerActivityLollipop) context).getAccountFragment() == Constants.PAYMENT_FRAGMENT) {
-                PaymentFragmentLollipop pFL = ((ManagerActivityLollipop) context).getPaymentFragment();
-                if (pFL != null) {
-                    pFL.setPricing();
-                }
             }
         }
     }
@@ -320,7 +315,7 @@ public class MyAccountInfo implements MegaRequestListenerInterface {
             log("paramType: "+request.getParamType());
             boolean avatarExists = false;
             if (e.getErrorCode() == MegaError.API_OK){
-                if(request.getParamType()==0){
+                if(request.getParamType()==MegaApiJava.USER_ATTR_AVATAR){
                     log("(0)request avatar");
                     ((ManagerActivityLollipop) context).setProfileAvatar();
 
@@ -360,9 +355,13 @@ public class MyAccountInfo implements MegaRequestListenerInterface {
                     if(drawerItem== ManagerActivityLollipop.DrawerItem.ACCOUNT){
                         log("Update the account fragment");
                         if(((ManagerActivityLollipop) context).getAccountFragment()== Constants.MY_ACCOUNT_FRAGMENT){
+                            log("MyAccount is selected!");
                             MyAccountFragmentLollipop mAF = ((ManagerActivityLollipop) context).getMyAccountFragment();
                             if(mAF!=null){
                                 mAF.updateNameView(fullName);
+                            }
+                            else{
+                                log("MyAccount is Null");
                             }
                         }
                     }
@@ -489,17 +488,6 @@ public class MyAccountInfo implements MegaRequestListenerInterface {
             if (e.getErrorCode() == MegaError.API_OK){
                 dbH.setPaymentMethodsTimeStamp();
                 setPaymentBitSet(Util.convertToBitSet(request.getNumber()));
-
-                //Check if myAccount section is visible
-                ManagerActivityLollipop.DrawerItem drawerItem = ((ManagerActivityLollipop) context).getDrawerItem();
-                if(drawerItem== ManagerActivityLollipop.DrawerItem.ACCOUNT){
-                    if(((ManagerActivityLollipop) context).getAccountFragment()== Constants.PAYMENT_FRAGMENT) {
-                        PaymentFragmentLollipop pFL = ((ManagerActivityLollipop) context).getPaymentFragment();
-                        if(pFL!=null){
-                            pFL.setPaymentMethods();
-                        }
-                    }
-                }
             }
         }
         else if(request.getType() == MegaRequest.TYPE_CREDIT_CARD_QUERY_SUBSCRIPTIONS){
@@ -543,12 +531,6 @@ public class MyAccountInfo implements MegaRequestListenerInterface {
                         MonthlyAnnualyFragmentLollipop myFL = ((ManagerActivityLollipop) context).getMonthlyAnnualyFragment();
                         if(myFL!=null){
                             myFL.setPricing();
-                        }
-                    }
-                    else if(((ManagerActivityLollipop) context).getAccountFragment()== Constants.PAYMENT_FRAGMENT) {
-                        PaymentFragmentLollipop pFL = ((ManagerActivityLollipop) context).getPaymentFragment();
-                        if(pFL!=null){
-                            pFL.setPricing();
                         }
                     }
                     else if(((ManagerActivityLollipop) context).getAccountFragment()== Constants.CENTILI_FRAGMENT) {

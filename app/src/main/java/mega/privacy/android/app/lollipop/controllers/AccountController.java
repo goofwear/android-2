@@ -1,6 +1,7 @@
 package mega.privacy.android.app.lollipop.controllers;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -20,14 +21,13 @@ import java.io.IOException;
 import mega.privacy.android.app.CameraSyncService;
 import mega.privacy.android.app.DatabaseHandler;
 import mega.privacy.android.app.DownloadService;
-import mega.privacy.android.app.LauncherFileExplorerActivity;
 import mega.privacy.android.app.MegaApplication;
 import mega.privacy.android.app.MegaPreferences;
 import mega.privacy.android.app.R;
 import mega.privacy.android.app.UploadService;
+import mega.privacy.android.app.lollipop.LoginActivityLollipop;
 import mega.privacy.android.app.lollipop.ManagerActivityLollipop;
 import mega.privacy.android.app.lollipop.MyAccountFragmentLollipop;
-import mega.privacy.android.app.lollipop.TourActivityLollipop;
 import mega.privacy.android.app.utils.Constants;
 import mega.privacy.android.app.utils.PreviewUtils;
 import mega.privacy.android.app.utils.ThumbnailUtils;
@@ -48,6 +48,7 @@ public class AccountController {
     public AccountController(Context context){
         log("AccountController created");
         this.context = context;
+
         if (megaApi == null){
             megaApi = ((MegaApplication) ((Activity)context).getApplication()).getMegaApi();
         }
@@ -55,6 +56,11 @@ public class AccountController {
         if (dbH == null){
             dbH = DatabaseHandler.getDbHandler(context);
         }
+    }
+
+    public AccountController(Context context, MegaApiAndroid megaApi){
+        this.context = context;
+        this.megaApi = megaApi;
     }
 
     public void deleteAccount(MyAccountFragmentLollipop mAF){
@@ -352,7 +358,8 @@ public class AccountController {
 
         if (!confirmAccount){
             if(context != null)	{
-                Intent intent = new Intent(context, TourActivityLollipop.class);
+                Intent intent = new Intent(context, LoginActivityLollipop.class);
+                intent.putExtra("visibleFragment", Constants. TOUR_FRAGMENT);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
@@ -363,7 +370,8 @@ public class AccountController {
                 context = null;
             }
             else{
-                Intent intent = new Intent (context, TourActivityLollipop.class);
+                Intent intent = new Intent(context, LoginActivityLollipop.class);
+                intent.putExtra("visibleFragment", Constants. TOUR_FRAGMENT);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 }

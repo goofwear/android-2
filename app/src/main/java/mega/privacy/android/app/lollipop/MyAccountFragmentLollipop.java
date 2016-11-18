@@ -7,9 +7,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -77,6 +79,7 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 	TextView usedSpace;
 	TextView lastSession;
 	TextView connections;
+	TextView fingerprint;
 
 	Button upgradeButton;
 	Button logoutButton;
@@ -87,8 +90,10 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 	LinearLayout expirationLayout;
 	LinearLayout lastSessionLayout;
 	LinearLayout connectionsLayout;
+	LinearLayout fingerprintLayout;
 
 	RelativeLayout exportMKLayout;
+	LinearLayout exportMKButtonsLayout;
 	TextView titleExportMK;
 	TextView subTitleExportMK;
 	TextView firstParExportMK;
@@ -199,6 +204,12 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 		initialLetter = (TextView) v.findViewById(R.id.my_account_initial_letter);
 
 		mkButton = (Button) v.findViewById(R.id.MK_button);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			mkButton.setBackground(ContextCompat.getDrawable(context, R.drawable.white_rounded_corners_button));
+		}
+		else{
+			mkButton.setBackgroundResource(R.drawable.black_button_border);
+		}
 		mkButton.setOnClickListener(this);
 		mkButton.setVisibility(View.VISIBLE);
 
@@ -229,6 +240,9 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 		usedSpace = (TextView) v.findViewById(R.id.my_account_used_space);
 
 		upgradeButton = (Button) v.findViewById(R.id.my_account_account_type_button);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			upgradeButton.setBackground(ContextCompat.getDrawable(context, R.drawable.ripple_upgrade));
+		}
 		upgradeButton.setText(getString(R.string.my_account_upgrade_pro).toUpperCase(Locale.getDefault()));
 		upgradeButton.setOnClickListener(this);
 		upgradeButton.setVisibility(View.VISIBLE);
@@ -250,6 +264,13 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 
 		lastSession = (TextView) v.findViewById(R.id.my_account_last_session);
 
+		fingerprintLayout = (LinearLayout) v.findViewById(R.id.my_account_fingerprint_layout);
+		LinearLayout.LayoutParams fingerprintParams = (LinearLayout.LayoutParams)fingerprintLayout.getLayoutParams();
+		fingerprintParams.setMargins(Util.scaleWidthPx(60, outMetrics), Util.scaleHeightPx(30, outMetrics), 0, 0);
+		fingerprintLayout.setLayoutParams(fingerprintParams);
+
+		fingerprint = (TextView) v.findViewById(R.id.my_account_fingerprint);
+
 		connectionsLayout = (LinearLayout) v.findViewById(R.id.my_account_connections_layout);
 		LinearLayout.LayoutParams connectionsParams = (LinearLayout.LayoutParams)connectionsLayout.getLayoutParams();
 		connectionsParams.setMargins(Util.scaleWidthPx(60, outMetrics), Util.scaleHeightPx(30, outMetrics), 0, 0);
@@ -258,6 +279,12 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 		connections = (TextView) v.findViewById(R.id.my_account_connections);
 
 		logoutButton = (Button) v.findViewById(R.id.logout_button);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			logoutButton.setBackground(ContextCompat.getDrawable(context, R.drawable.white_rounded_corners_button));
+		}
+		else{
+			logoutButton.setBackgroundResource(R.drawable.black_button_border);
+		}
 		logoutButton.setOnClickListener(this);
 		logoutButton.setVisibility(View.VISIBLE);
 
@@ -266,6 +293,9 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 		logoutButton.setLayoutParams(logoutButtonParams);
 
 		deleteAccountButton = (Button) v.findViewById(R.id.delete_account_button);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			deleteAccountButton.setBackground(ContextCompat.getDrawable(context, R.drawable.red_rounded_corners_button));
+		}
 		deleteAccountButton.setOnClickListener(this);
 
 		LinearLayout.LayoutParams deleteAccountParams = (LinearLayout.LayoutParams)deleteAccountButton.getLayoutParams();
@@ -276,6 +306,11 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 
 		parentLinearLayout = (LinearLayout) v.findViewById(R.id.parent_linear_layout);
 		exportMKLayout = (RelativeLayout) v.findViewById(R.id.export_mk_full_layout);
+		LinearLayout.LayoutParams exportMKButtonsParams = (LinearLayout.LayoutParams)exportMKLayout.getLayoutParams();
+		exportMKButtonsParams.setMargins(0, 0, 0, Util.scaleHeightPx(10, outMetrics));
+		exportMKLayout.setLayoutParams(exportMKButtonsParams);
+
+		exportMKButtonsLayout = (LinearLayout) v.findViewById(R.id.MK_buttons_layout);
 
 		titleExportMK = (TextView) v.findViewById(R.id.title_export_MK_layout);
 		RelativeLayout.LayoutParams titleExportMKParams = (RelativeLayout.LayoutParams)titleExportMK.getLayoutParams();
@@ -308,12 +343,18 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 		actionExportMK.setLayoutParams(actionExportMKParams);
 
 		copyMK = (Button) v.findViewById(R.id.copy_MK_button);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			copyMK.setBackground(ContextCompat.getDrawable(context, R.drawable.ripple_upgrade));
+		}
 		LinearLayout.LayoutParams copyMKParams = (LinearLayout.LayoutParams)copyMK.getLayoutParams();
 		copyMKParams.setMargins(Util.scaleWidthPx(20, outMetrics), Util.scaleHeightPx(20, outMetrics), 0, 0);
 		copyMK.setLayoutParams(copyMKParams);
 		copyMK.setOnClickListener(this);
 
 		saveMK = (Button) v.findViewById(R.id.save_MK_button);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			saveMK.setBackground(ContextCompat.getDrawable(context, R.drawable.ripple_upgrade));
+		}
 		LinearLayout.LayoutParams saveMKParams = (LinearLayout.LayoutParams)saveMK.getLayoutParams();
 		saveMKParams.setMargins(Util.scaleWidthPx(8, outMetrics), Util.scaleHeightPx(20, outMetrics), 0, 0);
 		saveMK.setLayoutParams(saveMKParams);
@@ -324,16 +365,59 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 			myAccountInfo = ((ManagerActivityLollipop)context).getMyAccountInfo();
 		}
 
-		myAccountInfo.setFirstName(false);
-		myAccountInfo.setLastName(false);
+		if(myAccountInfo!=null){
+			if((myAccountInfo.getFullName()!=null) && (!myAccountInfo.getFullName().isEmpty())){
+				log("MyName is:"+ myAccountInfo.getFullName());
+				nameView.setText(myAccountInfo.getFullName());
+			}
+			else{
+				myAccountInfo.setFirstName(false);
+				myAccountInfo.setLastName(false);
 
-		megaApi.getUserAttribute(myUser, MegaApiJava.USER_ATTR_FIRSTNAME, myAccountInfo);
-		megaApi.getUserAttribute(myUser, MegaApiJava.USER_ATTR_LASTNAME, myAccountInfo);
+				megaApi.getUserAttribute(myUser, MegaApiJava.USER_ATTR_FIRSTNAME, myAccountInfo);
+				megaApi.getUserAttribute(myUser, MegaApiJava.USER_ATTR_LASTNAME, myAccountInfo);
+			}
+		}
+		else{
+			myAccountInfo.setFirstName(false);
+			myAccountInfo.setLastName(false);
+
+			megaApi.getUserAttribute(myUser, MegaApiJava.USER_ATTR_FIRSTNAME, myAccountInfo);
+			megaApi.getUserAttribute(myUser, MegaApiJava.USER_ATTR_LASTNAME, myAccountInfo);
+		}
 
 		this.updateAvatar(myUser.getEmail(), true);
 
 		if(mKLayoutVisible){
+			log("on Create MK visible");
 			showMKLayout();
+		}
+
+		fingerprintLayout.setVisibility(View.GONE);
+		if (megaApi.getMyFingerprint() != null){
+			if (megaApi.getMyFingerprint().compareTo("") != 0){
+				fingerprintLayout.setVisibility(View.VISIBLE);
+				String fingerprintString = megaApi.getMyFingerprint();
+				String fingerprintUIString = "";
+				for (int i=0;i<fingerprintString.length();i++){
+					if (i != 0){
+						if ((i % 20) == 0){
+							fingerprintUIString = fingerprintUIString + "\n" + fingerprintString.charAt(i);
+						}
+						else if ((i % 4) == 0){
+							fingerprintUIString = fingerprintUIString + " " + fingerprintString.charAt(i);
+						}
+						else{
+							fingerprintUIString = fingerprintUIString + fingerprintString.charAt(i);
+						}
+					}
+					else{
+						fingerprintUIString = fingerprintUIString + fingerprintString.charAt(i);
+					}
+				}
+
+				fingerprint.setText(fingerprintUIString);
+			}
 		}
 		
 		ArrayList<MegaUser> contacts = megaApi.getContacts();
@@ -707,23 +791,34 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 				}
 			}
 			if (request.getParamType() == MegaApiJava.USER_ATTR_AVATAR) {
+				if(context==null){
+					log("Context is NULL");
+					return;
+				}
+
 				if (e.getErrorCode() == MegaError.API_OK){
 					log("Avatar changed!!");
-					if (context.getExternalCacheDir() != null){
-						String destinationPath = null;
-						destinationPath = context.getExternalCacheDir().getAbsolutePath() + "/" + myAccountInfo.getMyUser().getEmail() + ".jpg";
-						if(destinationPath!=null){
-							log("The destination of the avatar is: "+destinationPath);
-							megaApi.getUserAvatar(myAccountInfo.getMyUser(), destinationPath, myAccountInfo);
-						}
-						else{
-							log("ERROR! Destination PATH is NULL");
+					if(request.getFile()!=null){
+						log("old path: "+request.getFile());
+						File oldFile = new File(request.getFile());
+						if(oldFile!=null){
+							if(oldFile.exists()){
+								String newPath = null;
+								if (context.getExternalCacheDir() != null){
+									newPath = context.getExternalCacheDir().getAbsolutePath() + "/" + myAccountInfo.getMyUser().getEmail() + ".jpg";
+								}
+								else{
+									log("getExternalCacheDir() is NULL");
+									newPath = context.getCacheDir().getAbsolutePath() + "/" + myAccountInfo.getMyUser().getEmail() + ".jpg";
+								}
+								File newFile = new File(newPath);
+								oldFile.renameTo(newFile);
+							}
 						}
 					}
-					else{
-						log("getExternalCacheDir() is NULL");
-						megaApi.getUserAvatar(myAccountInfo.getMyUser(), context.getCacheDir().getAbsolutePath() + "/" + myAccountInfo.getMyUser().getEmail() + ".jpg", myAccountInfo);
-					}
+					((ManagerActivityLollipop) context).setProfileAvatar();
+
+					updateAvatar(myUser.getEmail(), false);
 				}
 				else{
 					log("Error when changing avatar: "+e.getErrorString()+" "+e.getErrorCode());
@@ -764,7 +859,7 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 			log("TYPE_GET_RECOVERY_LINK");
 			if (e.getErrorCode() == MegaError.API_OK){
 				log("The recovery link has been sent");
-				Util.showAlert(((ManagerActivityLollipop) context), getString(R.string.email_verification_text_change_pass), getString(R.string.email_verification_title));
+				Util.showAlert(((ManagerActivityLollipop) context), getString(R.string.email_verification_text), getString(R.string.email_verification_title));
 			}
 			else if (e.getErrorCode() == MegaError.API_ENOENT){
 				log("No account with this mail");
@@ -832,7 +927,9 @@ public class MyAccountFragmentLollipop extends Fragment implements OnClickListen
 	}
 
 	public void setMKLayoutVisible(boolean show){
+		log("setMKLayoutVisible");
 		mKLayoutVisible = show;
+//		showMKLayout();
 	}
 
 	public void showMKLayout(){

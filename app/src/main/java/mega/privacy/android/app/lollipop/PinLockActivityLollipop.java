@@ -8,6 +8,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -15,7 +16,6 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,9 +30,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import mega.privacy.android.app.DatabaseHandler;
-import mega.privacy.android.app.ManagerActivity;
 import mega.privacy.android.app.MegaApplication;
 import mega.privacy.android.app.MegaAttributes;
 import mega.privacy.android.app.MegaPreferences;
@@ -87,7 +87,7 @@ public class PinLockActivityLollipop extends AppCompatActivity implements OnClic
 	EditTextPIN passFourthLetter;
 	EditTextPIN passFifthLetter;
 	EditTextPIN passSixthLetter;
-	Switch passwordSwitch;
+	SwitchCompat passwordSwitch;
 	final StringBuilder sbFirst=new StringBuilder();
 	final StringBuilder sbSecond=new StringBuilder();
 	boolean secondRound = false;
@@ -215,15 +215,53 @@ public class PinLockActivityLollipop extends AppCompatActivity implements OnClic
 			warningLayout.setVisibility(View.INVISIBLE);
 		}
 
-		if(prefs.getPinLockType().equals(Constants.PIN_4)){
-			log("4 PIN");
-			add4DigitsPin();
-		}
-		else if(prefs.getPinLockType().equals(Constants.PIN_6)){
-			add6DigitsPin();
-		}
-		else{
-			addAlphanumericPin();
+		if (prefs != null){
+			if (prefs.getPinLockType() != null){
+				if(prefs.getPinLockType().equals(Constants.PIN_4)){
+					log("4 PIN");
+					add4DigitsPin();
+				}
+				else if(prefs.getPinLockType().equals(Constants.PIN_6)){
+					add6DigitsPin();
+				}
+				else{
+					addAlphanumericPin();
+				}
+			}
+			else{
+				log("Pin lock type is NULL");
+
+				String code = prefs.getPinLockCode();
+				if(code!=null){
+					boolean atleastOneAlpha = code.matches(".*[a-zA-Z]+.*");
+					if (atleastOneAlpha) {
+						log("Alphanumeric");
+						prefs.setPinLockType(Constants.PIN_ALPHANUMERIC);
+						dbH.setPinLockType(Constants.PIN_ALPHANUMERIC);
+						addAlphanumericPin();
+					}
+					else{
+						if(code.length()==4){
+							log("FOUR PIN detected");
+							prefs.setPinLockType(Constants.PIN_4);
+							dbH.setPinLockType(Constants.PIN_4);
+							add4DigitsPin();
+						}
+						else if(code.length()==6){
+							log("SIX PIN detected");
+							prefs.setPinLockType(Constants.PIN_6);
+							dbH.setPinLockType(Constants.PIN_6);
+							add6DigitsPin();
+						}
+						else{
+							log("DEFAULT FOUR PIN");
+							prefs.setPinLockType(Constants.PIN_4);
+							dbH.setPinLockType(Constants.PIN_4);
+							add4DigitsPin();
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -235,7 +273,7 @@ public class PinLockActivityLollipop extends AppCompatActivity implements OnClic
 		alphanumericLayout.setVisibility(View.VISIBLE);
 		switchLayout.setVisibility(View.VISIBLE);
 
-		passwordSwitch = (Switch) findViewById(R.id.switch_pin);
+		passwordSwitch = (SwitchCompat) findViewById(R.id.switch_pin);
 		passwordSwitch.setChecked(false);
 
 		buttonsLayout.getLayoutParams().width = Util.scaleWidthPx(240, outMetrics);
@@ -798,7 +836,6 @@ public class PinLockActivityLollipop extends AppCompatActivity implements OnClic
         });
 	}
 
-
 	private void setPin(String pin){
 		log("setPin");
 
@@ -862,9 +899,10 @@ public class PinLockActivityLollipop extends AppCompatActivity implements OnClic
 						     }
 
 						     public void onFinish() {
-						    	 log("Logout!!!");
-									ManagerActivity.logout(getApplication(), megaApi, false);
-									finish();
+								 log("Logout!!!");
+								 AccountController accountController = new AccountController(getApplicationContext());
+								 accountController.logout(getApplication(), megaApi, false);
+								 finish();
 						     }
 						  }.start();
 					}
@@ -963,8 +1001,9 @@ public class PinLockActivityLollipop extends AppCompatActivity implements OnClic
 
 						     public void onFinish() {
 						    	 log("Logout!!!");
-									ManagerActivity.logout(getApplication(), megaApi, false);
-									finish();
+								 AccountController accountController = new AccountController(getApplicationContext());
+								 accountController.logout(getApplication(), megaApi, false);
+								 finish();
 						     }
 						  }.start();
 					}
@@ -1026,7 +1065,7 @@ public class PinLockActivityLollipop extends AppCompatActivity implements OnClic
 	 */
 	private void submitFormAlphanumeric(String code) {
 //		String code = sbSecond
-
+		choosenTypePin = Constants.PIN_ALPHANUMERIC;
 		switch(mode){
 			case UNLOCK:{
 				String codePref = prefs.getPinLockCode();
@@ -1058,8 +1097,9 @@ public class PinLockActivityLollipop extends AppCompatActivity implements OnClic
 
 						     public void onFinish() {
 						    	 log("Logout!!!");
-									ManagerActivity.logout(getApplication(), megaApi, false);
-									finish();
+								 AccountController accountController = new AccountController(getApplicationContext());
+								 accountController.logout(getApplication(), megaApi, false);
+								 finish();
 						     }
 						  }.start();
 					}
@@ -1141,8 +1181,9 @@ public class PinLockActivityLollipop extends AppCompatActivity implements OnClic
 
 						     public void onFinish() {
 						    	 log("Logout!!!");
-									ManagerActivity.logout(getApplication(), megaApi, false);
-									finish();
+								 AccountController accountController = new AccountController(getApplicationContext());
+								 accountController.logout(getApplication(), megaApi, false);
+								 finish();
 						     }
 						  }.start();
 					}
@@ -1368,8 +1409,6 @@ public class PinLockActivityLollipop extends AppCompatActivity implements OnClic
 			case R.id.button_logout:{
 				AccountController aC = new AccountController(this);
 				aC.logout(getApplication(), megaApi, false);
-//				Intent intent = new Intent(this, TourActivityLollipop.class);
-//				startActivity(intent);
 				finish();
 				break;
 			}

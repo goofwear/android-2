@@ -181,6 +181,14 @@ public class SentRequestsFragmentLollipop extends Fragment implements RecyclerVi
 
 	}
 
+	public boolean showSelectMenuItem(){
+		if (adapterList != null){
+			return adapterList.isMultipleSelect();
+		}
+
+		return false;
+	}
+
 	/*
 	 * Clear all selected items
 	 */
@@ -316,7 +324,7 @@ public class SentRequestsFragmentLollipop extends Fragment implements RecyclerVi
 	        listView.setPadding(0, 0, 0, Util.scaleHeightPx(85, outMetrics));
 	        listView.setClipToPadding(false);;
 			
-			listView.addItemDecoration(new SimpleDividerItemDecoration(context));
+			listView.addItemDecoration(new SimpleDividerItemDecoration(context, outMetrics));
 			mLayoutManager = new MegaLinearLayoutManager(context);
 			listView.setLayoutManager(mLayoutManager);
 			//Just onClick implemented

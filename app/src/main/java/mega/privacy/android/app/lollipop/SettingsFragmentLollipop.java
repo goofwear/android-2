@@ -25,6 +25,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -108,8 +112,9 @@ public class SettingsFragmentLollipop extends PreferenceFragment implements OnPr
 	PreferenceCategory storageCategory;
 	PreferenceCategory cameraUploadCategory;
 	PreferenceCategory advancedFeaturesCategory;
-	
-	SwitchPreference pinLockEnable;
+
+	SwitchPreference pinLockEnableSwitch;
+	TwoLineCheckPreference pinLockEnableCheck;
 	Preference pinLockCode;
 	Preference downloadLocation;
 	Preference downloadLocationPreference;
@@ -184,9 +189,16 @@ public class SettingsFragmentLollipop extends PreferenceFragment implements OnPr
 		cameraUploadCategory = (PreferenceCategory) findPreference(CATEGORY_CAMERA_UPLOAD);	
 		pinLockCategory = (PreferenceCategory) findPreference(CATEGORY_PIN_LOCK);
 		advancedFeaturesCategory = (PreferenceCategory) findPreference(CATEGORY_ADVANCED_FEATURES);
-		
-		pinLockEnable = (SwitchPreference) findPreference(KEY_PIN_LOCK_ENABLE);
-		pinLockEnable.setOnPreferenceClickListener(this);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			pinLockEnableSwitch = (SwitchPreference) findPreference(KEY_PIN_LOCK_ENABLE);
+			pinLockEnableSwitch.setOnPreferenceClickListener(this);
+		}
+		else{
+			pinLockEnableCheck = (TwoLineCheckPreference) findPreference(KEY_PIN_LOCK_ENABLE);
+			pinLockEnableCheck.setOnPreferenceClickListener(this);
+		}
+
 		
 		pinLockCode = findPreference(KEY_PIN_LOCK_CODE);
 		pinLockCode.setOnPreferenceClickListener(this);
@@ -477,11 +489,21 @@ public class SettingsFragmentLollipop extends PreferenceFragment implements OnPr
 				dbH.setPinLockEnabled(false);
 				dbH.setPinLockCode("");
 				pinLock = false;
-				pinLockEnable.setChecked(pinLock);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					pinLockEnableSwitch.setChecked(pinLock);
+				}
+				else{
+					pinLockEnableCheck.setChecked(pinLock);
+				}
 			}
 			else{
 				pinLock = Boolean.parseBoolean(prefs.getPinLockEnabled());
-				pinLockEnable.setChecked(pinLock);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					pinLockEnableSwitch.setChecked(pinLock);
+				}
+				else{
+					pinLockEnableCheck.setChecked(pinLock);
+				}
 				pinLockCodeTxt = prefs.getPinLockCode();
 				if (pinLockCodeTxt == null){
 					pinLockCodeTxt = "";
@@ -719,7 +741,7 @@ public class SettingsFragmentLollipop extends PreferenceFragment implements OnPr
 		}
 		
 		if (pinLock){
-//			pinLockEnable.setTitle(getString(R.string.settings_pin_lock_off));
+//			pinLockEnableSwitch.setTitle(getString(R.string.settings_pin_lock_off));
 			ast = "";
 			if (pinLockCodeTxt.compareTo("") == 0){
 				ast = getString(R.string.settings_pin_lock_code_not_set);
@@ -733,7 +755,7 @@ public class SettingsFragmentLollipop extends PreferenceFragment implements OnPr
 			pinLockCategory.addPreference(pinLockCode);
 		}
 		else{
-//			pinLockEnable.setTitle(getString(R.string.settings_pin_lock_on));
+//			pinLockEnableSwitch.setTitle(getString(R.string.settings_pin_lock_on));
 			pinLockCategory.removePreference(pinLockCode);
 		}
 		
@@ -763,7 +785,17 @@ public class SettingsFragmentLollipop extends PreferenceFragment implements OnPr
 			storageAdvancedDevices.setChecked(false);
 		}
 	}
-	
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View v = super.onCreateView(inflater, container, savedInstanceState);
+		if(v != null) {
+			ListView lv = (ListView) v.findViewById(android.R.id.list);
+			lv.setPadding(0, 0, 0, 0);
+		}
+		return v;
+	}
+
 	@Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -1262,7 +1294,7 @@ public class SettingsFragmentLollipop extends PreferenceFragment implements OnPr
 			else{
 				dbH.setPinLockEnabled(false);
 				dbH.setPinLockCode("");
-//				pinLockEnable.setTitle(getString(R.string.settings_pin_lock_on));
+//				pinLockEnableSwitch.setTitle(getString(R.string.settings_pin_lock_on));
 				pinLockCategory.removePreference(pinLockCode);
 			}
 		}
@@ -1595,11 +1627,21 @@ public class SettingsFragmentLollipop extends PreferenceFragment implements OnPr
 			dbH.setPinLockEnabled(false);
 			dbH.setPinLockCode("");
 			pinLock = false;
-			pinLockEnable.setChecked(pinLock);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				pinLockEnableSwitch.setChecked(pinLock);
+			}
+			else{
+				pinLockEnableCheck.setChecked(pinLock);
+			}
 		}
 		else{
 			pinLock = Boolean.parseBoolean(prefs.getPinLockEnabled());
-			pinLockEnable.setChecked(pinLock);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				pinLockEnableSwitch.setChecked(pinLock);
+			}
+			else{
+				pinLockEnableCheck.setChecked(pinLock);
+			}
 			pinLockCodeTxt = prefs.getPinLockCode();
 			if (pinLockCodeTxt == null){
 				pinLockCodeTxt = "";
@@ -1621,7 +1663,7 @@ public class SettingsFragmentLollipop extends PreferenceFragment implements OnPr
 			dbH.setPinLockCode(pinLockCodeTxt);
 
 		}
-//		pinLockEnable.setTitle(getString(R.string.settings_pin_lock_off));
+//		pinLockEnableSwitch.setTitle(getString(R.string.settings_pin_lock_off));
 		ast = "";
 		if (pinLockCodeTxt.compareTo("") == 0){
 			ast = getString(R.string.settings_pin_lock_code_not_set);

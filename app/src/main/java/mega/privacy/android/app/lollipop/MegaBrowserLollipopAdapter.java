@@ -101,6 +101,7 @@ public class MegaBrowserLollipopAdapter extends RecyclerView.Adapter<MegaBrowser
 
 		public ImageView publicLinkImageMultiselect;
 		public RelativeLayout itemLayout;
+		public ImageView permissionsIcon;
 	}
 	
 	public class ViewHolderBrowserGrid extends ViewHolderBrowser{
@@ -277,6 +278,7 @@ public class MegaBrowserLollipopAdapter extends RecyclerView.Adapter<MegaBrowser
 			
 			holderList.publicLinkImageMultiselect = (ImageView) v.findViewById(R.id.file_list_public_link_multiselect);
 			holderList.publicLinkImage = (ImageView) v.findViewById(R.id.file_list_public_link);
+			holderList.permissionsIcon = (ImageView) v.findViewById(R.id.file_list_incoming_permissions);
 			
 			holderList.textViewFileName = (TextView) v.findViewById(R.id.file_list_filename);			
 			holderList.textViewFileName.getLayoutParams().height = RelativeLayout.LayoutParams.WRAP_CONTENT;
@@ -285,16 +287,14 @@ public class MegaBrowserLollipopAdapter extends RecyclerView.Adapter<MegaBrowser
 //			holderList.textViewFileName.getViewTreeObserver().addOnGlobalLayoutListener(new MyGlobalLayoutListener(holderList));		
 			
 			holderList.textViewFileSize = (TextView) v.findViewById(R.id.file_list_filesize);
-			holderList.transferProgressBar = (ProgressBar) v.findViewById(R.id.transfers_list__browser_bar);
+			holderList.transferProgressBar = (ProgressBar) v.findViewById(R.id.transfers_list_browser_bar);
 			
 			holderList.imageButtonThreeDots = (ImageButton) v.findViewById(R.id.file_list_three_dots);
 			
 			//Right margin
 			RelativeLayout.LayoutParams actionButtonParams = (RelativeLayout.LayoutParams)holderList.imageButtonThreeDots.getLayoutParams();
 			actionButtonParams.setMargins(0, 0, Util.scaleWidthPx(10, outMetrics), 0); 
-			holderList.imageButtonThreeDots.setLayoutParams(actionButtonParams);			
-		
-			v.setTag(holderList);
+			holderList.imageButtonThreeDots.setLayoutParams(actionButtonParams);
 		
 			holderList.savedOffline.setVisibility(View.INVISIBLE);
 		
@@ -309,6 +309,8 @@ public class MegaBrowserLollipopAdapter extends RecyclerView.Adapter<MegaBrowser
 			
 			holderList.imageButtonThreeDots.setTag(holderList);
 			holderList.imageButtonThreeDots.setOnClickListener(this);
+
+			v.setTag(holderList);
 			
 			return holderList;
 		}
@@ -326,10 +328,13 @@ public class MegaBrowserLollipopAdapter extends RecyclerView.Adapter<MegaBrowser
 			holderGrid.separator = (View) v.findViewById(R.id.file_grid_separator);
 			holderGrid.publicLinkImage = (ImageView) v.findViewById(R.id.file_grid_public_link);
 			holderGrid.transferProgressBar.setVisibility(View.GONE);
-			holderGrid.textViewFileSize.setVisibility(View.VISIBLE);
-			
-			v.setTag(holderGrid);
-			
+			if(holderGrid.textViewFileSize!=null){
+				holderGrid.textViewFileSize.setVisibility(View.VISIBLE);
+			}
+			else{
+				log("textViewFileSize is NULL");
+			}
+
 			holderGrid.savedOffline.setVisibility(View.INVISIBLE);
 			holderGrid.publicLinkImage.setVisibility(View.GONE);
 			
@@ -338,6 +343,8 @@ public class MegaBrowserLollipopAdapter extends RecyclerView.Adapter<MegaBrowser
 			
 			holderGrid.imageButtonThreeDots.setTag(holderGrid);
 			holderGrid.imageButtonThreeDots.setOnClickListener(this);
+
+			v.setTag(holderGrid);
 			
 			return holderGrid;
 		}
@@ -733,6 +740,7 @@ public class MegaBrowserLollipopAdapter extends RecyclerView.Adapter<MegaBrowser
 		
 		holder.publicLinkImageMultiselect.setVisibility(View.GONE);
 		holder.publicLinkImage.setVisibility(View.GONE);
+		holder.permissionsIcon.setVisibility(View.GONE);
 		
 		if(node.isExported()){
 			//Node has public link
@@ -775,7 +783,9 @@ public class MegaBrowserLollipopAdapter extends RecyclerView.Adapter<MegaBrowser
 				holder.textViewFileSize.setText(MegaApiUtils.getInfoFolder(node, context));
 			}
 			
-			if(type==Constants.INCOMING_SHARES_ADAPTER){
+			if(type==Constants.INCOMING_SHARES_ADAPTER||type==Constants.CONTACT_FILE_ADAPTER){
+				holder.publicLinkImageMultiselect.setVisibility(View.GONE);
+				holder.publicLinkImage.setVisibility(View.GONE);
 				holder.imageView.setImageResource(R.drawable.ic_folder_shared_list);
 				//Show the owner of the shared folder
 				ArrayList<MegaShare> sharesIncoming = megaApi.getInSharesList();
@@ -803,6 +813,19 @@ public class MegaBrowserLollipopAdapter extends RecyclerView.Adapter<MegaBrowser
 						}						
 					}				
 				}
+
+				int accessLevel = megaApi.getAccess(node);
+
+				if(accessLevel== MegaShare.ACCESS_FULL){
+					holder.permissionsIcon.setImageResource(R.drawable.ic_permissions_full_access);
+				}
+				else if(accessLevel== MegaShare.ACCESS_READWRITE){
+					holder.permissionsIcon.setImageResource(R.drawable.ic_permissions_read_write);
+				}
+				else{
+					holder.permissionsIcon.setImageResource(R.drawable.ic_permissions_read_only);
+				}
+				holder.permissionsIcon.setVisibility(View.VISIBLE);
 			}
 			else if (type==Constants.OUTGOING_SHARES_ADAPTER){
 				holder.imageView.setImageResource(R.drawable.ic_folder_shared_list);

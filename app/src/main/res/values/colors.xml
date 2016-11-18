@@ -10,7 +10,6 @@
     <color name="mega_transparency">#CCdb0605</color>
     <color name="text_login">#333333</color>
     <color name="transparency_white">#80FFFFFF</color>
-    <color name="used_space_ok">#1fa4e7</color>
     <color name="used_space_warning">#ffb800</color>
     <color name="used_space_exceed">#d52400</color>
     <color name="transfer_progress">#cccccc</color>
@@ -47,6 +46,8 @@
  <!--    <color name="dark_grey_cloud_drive">#6d6f70</color>--> 
     
     <color name="green_free_account">#31B404</color>
+
+    <color name="divider_upgrade_account">#1F000000</color>
      
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
@@ -70,9 +71,13 @@
     
     <color name="accentColor">#00BFA5</color>
     <color name="textGrey">#6d6f70</color> 
-    
+
     <color name="filePropertiesToolBar">#2284b1</color>
 
 	<color name="tour_bar_grey">#dddddd</color>
 	<color name="tour_bar_red">#cc0000</color>
+
+    <color name="small_letter_upgrade_account">#8a333333</color>
+
+    <color name="preference_category_title">#f2f2f2</color>
 </resources>

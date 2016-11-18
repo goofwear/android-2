@@ -399,6 +399,16 @@ public class MegaPhotoSyncGridAdapterLollipop extends RecyclerView.Adapter<MegaP
 						intent.putExtra("parentNodeHandle", megaApi.getParentNode(n).getHandle());
 						intent.putExtra("adapterType", Constants.PHOTO_SYNC_ADAPTER);
 						intent.putExtra("orderGetChildren", orderGetChildren);
+						MyAccountInfo accountInfo = ((ManagerActivityLollipop)context).getMyAccountInfo();
+						if(accountInfo!=null){
+							intent.putExtra("typeAccount", accountInfo.getAccountType());
+						}
+						if (megaApi.getParentNode(nodes.get(position)).getType() == MegaNode.TYPE_ROOT){
+							intent.putExtra("parentNodeHandle", -1L);
+						}
+						else{
+							intent.putExtra("parentNodeHandle", megaApi.getParentNode(nodes.get(position)).getHandle());
+						}
 						context.startActivity(intent);
 					}
 					else if (MimeTypeThumbnail.typeForName(n.getName()).isVideo() || MimeTypeThumbnail.typeForName(n.getName()).isAudio() ){
@@ -707,7 +717,8 @@ public class MegaPhotoSyncGridAdapterLollipop extends RecyclerView.Adapter<MegaP
 				if (monthPic.nodeHandles.size() > i){
 					MegaNode n = megaApi.getNodeByHandle(monthPic.nodeHandles.get(i));
 					if (n == null){
-						Intent intent = new Intent(context, TourActivityLollipop.class);
+						Intent intent = new Intent(context, LoginActivityLollipop.class);
+						intent.putExtra("visibleFragment", Constants. TOUR_FRAGMENT);
 				        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
 				        	intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 				        context.startActivity(intent);

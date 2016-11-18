@@ -12,6 +12,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.ActionBar;
@@ -58,6 +60,7 @@ import mega.privacy.android.app.components.RoundedImageView;
 import mega.privacy.android.app.components.SimpleDividerItemDecoration;
 import mega.privacy.android.app.components.SlidingUpPanelLayout;
 import mega.privacy.android.app.components.SlidingUpPanelLayout.PanelState;
+import mega.privacy.android.app.lollipop.listeners.FabButtonListener;
 import mega.privacy.android.app.utils.Constants;
 import mega.privacy.android.app.utils.MegaApiUtils;
 import mega.privacy.android.app.utils.Util;
@@ -81,7 +84,7 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 
 	String userEmail;
 
-	RelativeLayout mainLayout;
+	CoordinatorLayout mainLayout;
 	TextView nameView;
 	RoundedImageView imageView;
 	TextView contactInitialLetter;
@@ -93,13 +96,13 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 	GestureDetectorCompat detector;
 	ImageView emptyImageView;
 	TextView emptyTextView;
-	
-	ImageView toolbarBack;
 
 	MegaUser contact;
 	ArrayList<MegaNode> contactNodes;
 
 	MegaBrowserLollipopAdapter adapter;
+
+	FloatingActionButton fab;
 
 	long parentHandle = -1;
 	MegaNode selectedNode = null;
@@ -140,11 +143,11 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 //	public LinearLayout optionPublicLink;
 //	public LinearLayout optionShare;
 //	public LinearLayout optionPermissions;
+	public LinearLayout optionSendToInbox;
 	public LinearLayout optionDelete;
-	public LinearLayout optionRemoveTotal;
 //	public LinearLayout optionClearShares;
 	public LinearLayout optionLeaveShare;
-//	public LinearLayout optionMoveTo;
+	public LinearLayout optionMoveTo;
 	public LinearLayout optionCopyTo;	
 	public TextView propertiesText;
 	
@@ -166,10 +169,10 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 	        int position = listView.getChildPosition(view);
 
 	        // handle long press
-			if (adapter.getPositionClicked() == -1){
+			if (!adapter.isMultipleSelect()){
 				adapter.setMultipleSelect(true);
-			
-				actionMode = ((AppCompatActivity)context).startSupportActionMode(new ActionBarCallBack());			
+
+				actionMode = ((AppCompatActivity)context).startSupportActionMode(new ActionBarCallBack());
 
 		        itemClick(position);
 			}  
@@ -220,7 +223,7 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 					}
 					clearSelections();
 					hideMultipleSelect();
-					((ContactPropertiesActivityLollipop) context).leaveMultipleShares(handleList);					
+					((ContactPropertiesActivityLollipop) context).showConfirmationLeaveIncomingShare(handleList);
 				}
 			}
 			return false;
@@ -354,28 +357,17 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 		if (userEmail != null){
 			v = inflater.inflate(R.layout.fragment_contact_file_list, container, false);
 
-			if (aB != null){
-				aB.setTitle(R.string.contact_shared_files);
-				aB.setLogo(R.drawable.ic_action_navigation_accept_white);
-			}
-			
-			mainLayout = (RelativeLayout) v.findViewById(R.id.contact_file_list);
-			FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mainLayout.getLayoutParams();
-			params.setMargins(0, getStatusBarHeight(), 0, 0);
-			
+			mainLayout = (CoordinatorLayout) v.findViewById(R.id.contact_file_list_coordinator_layout);
+
 			nameView = (TextView) v.findViewById(R.id.contact_file_list_name);
 			imageView = (RoundedImageView) v.findViewById(R.id.contact_file_list_thumbnail);
 			contactInitialLetter = (TextView) v.findViewById(R.id.contact_file_list_initial_letter);
 			textViewContent = (TextView) v.findViewById(R.id.contact_file_list_content);
 			contactLayout = (RelativeLayout) v.findViewById(R.id.contact_file_list_contact_layout);
 			contactLayout.setOnClickListener(this);
-			
-			toolbarBack = (ImageView) v.findViewById(R.id.contact_file_list_toolbar_back);
-			RelativeLayout.LayoutParams paramsBack = (RelativeLayout.LayoutParams) toolbarBack.getLayoutParams();
-			int leftMarginBack = getResources().getDimensionPixelSize(R.dimen.left_margin_back_arrow);
-			paramsBack.setMargins(leftMarginBack, 0, 0, 0);
-			toolbarBack.setLayoutParams(paramsBack);
-			toolbarBack.setOnClickListener(this);
+			fab = (FloatingActionButton) v.findViewById(R.id.floating_button_contact_file_list);
+			fab.setOnClickListener(new FabButtonListener(context));
+			fab.setVisibility(View.GONE);
 
 			nameView.setText(userEmail);
 			contact = megaApi.getContact(userEmail);
@@ -430,7 +422,7 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 			detector = new GestureDetectorCompat(getActivity(), new RecyclerViewOnGestureListener());
 			
 			listView = (RecyclerView) v.findViewById(R.id.contact_file_list_view_browser);
-			listView.addItemDecoration(new SimpleDividerItemDecoration(context));
+			listView.addItemDecoration(new SimpleDividerItemDecoration(context, outMetrics));
 			mLayoutManager = new MegaLinearLayoutManager(context);
 			listView.setLayoutManager(mLayoutManager);
 			listView.addOnItemTouchListener(this);
@@ -479,53 +471,25 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 			propertiesText = (TextView) v.findViewById(R.id.contact_file_list_option_properties_text);			
 			
 			optionDelete = (LinearLayout) v.findViewById(R.id.contact_file_list_option_delete_layout);			
-			optionRemoveTotal = (LinearLayout) v.findViewById(R.id.contact_file_list_option_remove_layout);
-	
-			optionCopyTo = (LinearLayout) v.findViewById(R.id.contact_file_list_option_copy_layout);			
-			
+			optionSendToInbox = (LinearLayout) v.findViewById(R.id.contact_file_list_option_send_inbox_layout);
+			optionCopyTo = (LinearLayout) v.findViewById(R.id.contact_file_list_option_copy_layout);
+			optionMoveTo = (LinearLayout) v.findViewById(R.id.contact_file_list_option_move_layout);
+
 			optionDownload.setOnClickListener(this);
 			optionProperties.setOnClickListener(this);
 			optionRename.setOnClickListener(this);
 			optionDelete.setOnClickListener(this);
-			optionRemoveTotal.setOnClickListener(this);			
+
 			optionCopyTo.setOnClickListener(this);
-			
+			optionMoveTo.setOnClickListener(this);
+			optionLeaveShare.setOnClickListener(this);
+			optionSendToInbox.setOnClickListener(this);
 			optionsOutLayout.setOnClickListener(this);
 			
 			slidingOptionsPanel.setVisibility(View.INVISIBLE);
 			log("SliddingPanel invisible!");
 			slidingOptionsPanel.setPanelState(PanelState.HIDDEN);		
 			log("SliddingPanel hidden!");
-			
-			slidingOptionsPanel.setPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
-	            @Override
-	            public void onPanelSlide(View panel, float slideOffset) {
-	            	log("onPanelSlide, offset " + slideOffset);
-	            }
-
-	            @Override
-	            public void onPanelExpanded(View panel) {
-	            	log("onPanelExpanded");
-
-	            }
-
-	            @Override
-	            public void onPanelCollapsed(View panel) {
-	            	log("onPanelCollapsed");
-	            	
-
-	            }
-
-	            @Override
-	            public void onPanelAnchored(View panel) {
-	            	log("onPanelAnchored");
-	            }
-
-	            @Override
-	            public void onPanelHidden(View panel) {
-	                log("onPanelHidden");                
-	            }
-	        });			
 		}
 
 		return v;
@@ -535,6 +499,11 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 		log("showNodeOptionsPanel");
 		
 //		fabButton.setVisibility(View.GONE);
+
+		optionDownload.setVisibility(View.VISIBLE);
+		optionProperties.setVisibility(View.VISIBLE);
+		optionSendToInbox.setVisibility(View.VISIBLE);
+		optionCopyTo.setVisibility(View.VISIBLE);
 		
 		this.selectedNode = sNode;	
 		
@@ -546,56 +515,46 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 		
 		int accessLevel = megaApi.getAccess(selectedNode);
 		log("Node: "+selectedNode.getName());
-		log("ManagerActivity.CONTACT_FILE_ADAPTER: "+accessLevel);					
+		log("ManagerActivity.CONTACT_FILE_ADAPTER: "+accessLevel);
+
+		if(parentHandleStack.isEmpty()||parentHandle==-1){
+			if(selectedNode.isFile()){
+				optionLeaveShare.setVisibility(View.GONE);
+			}
+			else {
+				optionLeaveShare.setVisibility(View.VISIBLE);
+			}
+		}
+		else{
+			optionLeaveShare.setVisibility(View.GONE);
+		}
 		
 		switch (accessLevel) {			
 			case MegaShare.ACCESS_FULL: {
-				
-				optionDownload.setVisibility(View.VISIBLE);
-				optionProperties.setVisibility(View.VISIBLE);
-				
-				if(selectedNode.isFile()){
-					optionLeaveShare.setVisibility(View.GONE);
-				}
-				else {
-					optionLeaveShare.setVisibility(View.VISIBLE);
-				}
-				optionRemoveTotal.setVisibility(View.GONE);
+				optionMoveTo.setVisibility(View.VISIBLE);
 				optionRename.setVisibility(View.VISIBLE);
-				optionDelete.setVisibility(View.GONE);
-	
+
+				if(parentHandleStack.isEmpty()||parentHandle==-1){
+					optionDelete.setVisibility(View.GONE);
+				}
+				else{
+					optionDelete.setVisibility(View.VISIBLE);
+				}
+
 				break;
 			}
 			case MegaShare.ACCESS_READ: {
 				log("read");
-				optionDownload.setVisibility(View.VISIBLE);
-				optionProperties.setVisibility(View.VISIBLE);	
 				optionRename.setVisibility(View.GONE);
 				optionDelete.setVisibility(View.GONE);
-				optionRemoveTotal.setVisibility(View.GONE);
-				
-				if(selectedNode.isFile()){
-					optionLeaveShare.setVisibility(View.GONE);
-				}
-				else {
-					optionLeaveShare.setVisibility(View.VISIBLE);
-				}						
+				optionMoveTo.setVisibility(View.GONE);
 				break;
 			}
 			case MegaShare.ACCESS_READWRITE: {
 				log("readwrite");
-				optionDownload.setVisibility(View.VISIBLE);
-				optionProperties.setVisibility(View.VISIBLE);
-				//						holder.shareDisabled.setVisibility(View.VISIBLE);
-				optionRename.setVisibility(View.VISIBLE);
+				optionMoveTo.setVisibility(View.GONE);
+				optionRename.setVisibility(View.GONE);
 				optionDelete.setVisibility(View.GONE);
-				optionRemoveTotal.setVisibility(View.GONE);
-				if(selectedNode.isFile()){
-					optionLeaveShare.setVisibility(View.GONE);
-				}
-				else {
-					optionLeaveShare.setVisibility(View.VISIBLE);
-				}
 				break;
 			}
 		}
@@ -701,7 +660,6 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 			adapter.setParentHandle(parentHandle);
 			if (aB != null){
 				aB.setTitle(R.string.contact_shared_files);
-				aB.setLogo(R.drawable.ic_action_navigation_accept_white);
 			}
 			setNodes(megaApi.getInShares(contact));
 		}
@@ -752,6 +710,17 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 		aB = ((AppCompatActivity)activity).getSupportActionBar();
 		if (aB != null){
 			aB.show();
+		}
+	}
+
+	@Override
+	public void onAttach(Context context) {
+		super.onAttach(context);
+		this.context = context;
+		aB = ((AppCompatActivity)context).getSupportActionBar();
+		if (aB != null){
+			aB.show();
+			((AppCompatActivity) context).invalidateOptionsMenu();
 		}
 	}
 
@@ -909,7 +878,6 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 
 				if (aB != null){
 					aB.setTitle(n.getName());
-					aB.setLogo(R.drawable.ic_action_navigation_previous_item);
 				}
 				((ContactPropertiesActivityLollipop)context).supportInvalidateOptionsMenu();
 
@@ -934,11 +902,13 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 					emptyImageView.setVisibility(View.GONE);
 					emptyTextView.setVisibility(View.GONE);
 				}
+				showFabButton(n);
 			} 
 			else {
 				if (MimeTypeList.typeForName(contactNodes.get(position).getName()).isImage()) {
 					Intent intent = new Intent(context, FullScreenImageViewerLollipop.class);
 					intent.putExtra("position", position);
+					intent.putExtra("adapterType", Constants.CONTACT_FILE_ADAPTER);
 					if (megaApi.getParentNode(contactNodes.get(position)).getType() == MegaNode.TYPE_ROOT) {
 						intent.putExtra("parentNodeHandle", -1L);
 					} else {
@@ -986,30 +956,14 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 	}
 
 	public int onBackPressed() {
-		
-		PanelState pS=slidingOptionsPanel.getPanelState();
-		
-		if(pS==null){
-			log("NULLL");
-		}
-		else{
-			if(pS==PanelState.HIDDEN){
-				log("Hidden");
-			}
-			else if(pS==PanelState.COLLAPSED){
-				log("Collapsed");
-			}
-			else{
-				log("ps: "+pS);
-			}
-		}		
-		
+		log("onBackPressed");
 		if(slidingOptionsPanel.getPanelState()!=PanelState.HIDDEN){
 			log("getPanelState()!=PanelState.HIDDEN");
 			slidingOptionsPanel.setPanelState(PanelState.HIDDEN);
 			slidingOptionsPanel.setVisibility(View.GONE);
 			setPositionClicked(-1);
 			notifyDataSetChanged();
+			log("return 4");
 			return 4;
 		}
 		
@@ -1021,9 +975,12 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 		if (adapter.getPositionClicked() != -1) {
 			adapter.setPositionClicked(-1);
 			adapter.notifyDataSetChanged();
+			log("return 1");
 			return 1;
 		} else {
 			if (parentHandleStack.isEmpty()) {
+				log("return 0");
+				fab.setVisibility(View.GONE);
 				return 0;
 			} else {
 				parentHandle = parentHandleStack.pop();
@@ -1031,32 +988,40 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 				emptyImageView.setVisibility(View.GONE);
 				emptyTextView.setVisibility(View.GONE);
 				if (parentHandle == -1) {
+					fab.setVisibility(View.GONE);
 					contactNodes = megaApi.getInShares(contact);
 					if (aB != null){
 						aB.setTitle(R.string.contact_shared_files);
-						aB.setLogo(R.drawable.ic_action_navigation_accept_white);
 					}
 					((ContactPropertiesActivityLollipop)context).supportInvalidateOptionsMenu();
 					adapter.setNodes(contactNodes);
 					listView.scrollToPosition(0);
 					((ContactPropertiesActivityLollipop)context).setParentHandle(parentHandle);
 					adapter.setParentHandle(parentHandle);
+					log("return 2");
 					return 2;
 				} else {
 					contactNodes = megaApi.getChildren(megaApi.getNodeByHandle(parentHandle));
 					if (aB != null){
 						aB.setTitle(megaApi.getNodeByHandle(parentHandle).getName());
-						aB.setLogo(R.drawable.ic_action_navigation_previous_item);
 					}
 					((ContactPropertiesActivityLollipop)context).supportInvalidateOptionsMenu();
 					adapter.setNodes(contactNodes);
 					listView.scrollToPosition(0);
 					((ContactPropertiesActivityLollipop)context).setParentHandle(parentHandle);
 					adapter.setParentHandle(parentHandle);
+					showFabButton(megaApi.getNodeByHandle(parentHandle));
+					log("return 3");
 					return 3;
 				}
 			}
 		}
+	}
+
+	public void setNodes(){
+		contactNodes = megaApi.getChildren(megaApi.getNodeByHandle(parentHandle));
+		adapter.setNodes(contactNodes);
+		listView.invalidate();
 	}
 
 	public void selectAll(){
@@ -1156,25 +1121,30 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 		}		
 	}
 
+	public void showFabButton(MegaNode node){
+		log("showFabButton");
+		int accessLevel = megaApi.getAccess(node);
+
+		if(accessLevel== MegaShare.ACCESS_READ){
+			fab.setVisibility(View.GONE);
+		}
+		else{
+			fab.setVisibility(View.VISIBLE);
+		}
+		((ContactPropertiesActivityLollipop) context).invalidateOptionsMenu();
+	}
+
+	public int getFabVisibility(){
+		return fab.getVisibility();
+	}
+
 	@Override
 	public void onClick(View v) {
 		log("onClick");
 		switch (v.getId()) {
-		//		case R.id.contact_file_list_contact_layout: {
-		//			Intent i = new Intent(this, ContactPropertiesActivityLollipop.class);
-		//			i.putExtra("name", contact.getEmail());
-		//			startActivity(i);
-		//			finish();
-		//			break;
-		//		}
-			case R.id.contact_file_list_toolbar_back:{
-				((ContactPropertiesActivityLollipop)context).onBackPressed();
-				break;
-			}
 			case R.id.contact_file_list_option_download_layout: {
 				log("Download option");
-				slidingOptionsPanel.setPanelState(PanelState.HIDDEN);				
-				slidingOptionsPanel.setVisibility(View.GONE);
+				hideOptionsPanel();
 				setPositionClicked(-1);
 				notifyDataSetChanged();
 				ArrayList<Long> handleList = new ArrayList<Long>();
@@ -1184,17 +1154,32 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 			}
 			case R.id.contact_file_list_option_leave_share_layout: {
 				log("Leave share option");
-				slidingOptionsPanel.setPanelState(PanelState.HIDDEN);				
-				slidingOptionsPanel.setVisibility(View.GONE);
+				hideOptionsPanel();
 				setPositionClicked(-1);
 				notifyDataSetChanged();
-				((ContactPropertiesActivityLollipop) context).leaveIncomingShare(selectedNode);
+				((ContactPropertiesActivityLollipop) context).showConfirmationLeaveIncomingShare(selectedNode);
+				break;
+			}
+			case R.id.contact_file_list_option_send_inbox_layout:{
+				log("Send to inbox option");
+				hideOptionsPanel();
+				if(selectedNode==null){
+					log("The selected node is NULL");
+					return;
+				}
+
+				Intent intent = new Intent(ContactsExplorerActivityLollipop.ACTION_PICK_CONTACT_SEND_FILE);
+				intent.setClass(context, ContactsExplorerActivityLollipop.class);
+				//Multiselect=0
+				intent.putExtra("MULTISELECT", 0);
+				intent.putExtra("SEND_FILE",1);
+				intent.putExtra(ContactsExplorerActivityLollipop.EXTRA_NODE_HANDLE, selectedNode.getHandle());
+				((ContactPropertiesActivityLollipop) context).startActivityForResult(intent, Constants.REQUEST_CODE_SELECT_CONTACT);
 				break;
 			}
 			case R.id.contact_file_list_option_move_layout:{
 				log("Move option");
-				slidingOptionsPanel.setPanelState(PanelState.HIDDEN);
-				slidingOptionsPanel.setVisibility(View.GONE);
+				hideOptionsPanel();
 				setPositionClicked(-1);
 				notifyDataSetChanged();
 				ArrayList<Long> handleList = new ArrayList<Long>();
@@ -1205,13 +1190,12 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 			}
 			case R.id.contact_file_list_option_properties_layout: {
 				log("Properties option");
-				slidingOptionsPanel.setPanelState(PanelState.HIDDEN);
-				slidingOptionsPanel.setVisibility(View.GONE);
+				hideOptionsPanel();
 				setPositionClicked(-1);
 				notifyDataSetChanged();
 				Intent i = new Intent(context, FilePropertiesActivityLollipop.class);
 				i.putExtra("handle", selectedNode.getHandle());
-				
+				i.putExtra("from", FilePropertiesActivityLollipop.FROM_INCOMING_SHARES);
 				if (selectedNode.isFolder()) {
 					if (megaApi.isShared(selectedNode)){
 						i.putExtra("imageId", R.drawable.folder_shared_mime);	
@@ -1230,8 +1214,7 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 			}
 			case R.id.contact_file_list_option_rename_layout: {
 				log("Rename option");
-				slidingOptionsPanel.setPanelState(PanelState.HIDDEN);
-				slidingOptionsPanel.setVisibility(View.GONE);
+				hideOptionsPanel();
 				setPositionClicked(-1);
 				notifyDataSetChanged();
 				((ContactPropertiesActivityLollipop) context).showRenameDialog(selectedNode, selectedNode.getName());
@@ -1239,15 +1222,26 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 			}	
 			case R.id.contact_file_list_option_copy_layout: {
 				log("Copy option");
-				slidingOptionsPanel.setPanelState(PanelState.HIDDEN);
-				slidingOptionsPanel.setVisibility(View.GONE);
+				hideOptionsPanel();
 				setPositionClicked(-1);
 				notifyDataSetChanged();
 				ArrayList<Long> handleList = new ArrayList<Long>();
 				handleList.add(selectedNode.getHandle());									
 				((ContactPropertiesActivityLollipop) context).showCopyLollipop(handleList);
 				break;
-			}	
+			}
+			case R.id.contact_file_list_option_delete_layout:{
+				log("Delete/Move to rubbish option");
+				hideOptionsPanel();
+				if(selectedNode==null){
+					log("The selected node is NULL");
+					return;
+				}
+				ArrayList<Long> handleList = new ArrayList<Long>();
+				handleList.add(selectedNode.getHandle());
+				((ContactPropertiesActivityLollipop) context).askConfirmationMoveToRubbish(handleList);
+				break;
+			}
 		}
 	}
 
@@ -1319,5 +1313,9 @@ public class ContactFileListFragmentLollipop extends Fragment implements OnClick
 	public void onTouchEvent(RecyclerView arg0, MotionEvent arg1) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public long getParentHandle() {
+		return parentHandle;
 	}
 }

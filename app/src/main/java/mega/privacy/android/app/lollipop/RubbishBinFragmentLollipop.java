@@ -299,10 +299,10 @@ public class RubbishBinFragmentLollipop extends Fragment implements OnClickListe
 		if (parentHandle == -1||parentHandle==megaApi.getRubbishNode().getHandle()){
 
 			if(aB!=null){
-				aB.setTitle(getString(R.string.section_rubbish_bin));
+//				aB.setTitle(getString(R.string.section_rubbish_bin));
 				log("indicator_arrow_back_445");
-				aB.setHomeAsUpIndicator(R.drawable.ic_menu_white);
-				((ManagerActivityLollipop)context).setFirstNavigationLevel(true);
+//				aB.setHomeAsUpIndicator(R.drawable.ic_menu_white);
+//				((ManagerActivityLollipop)context).setFirstNavigationLevel(true);
 			}
 
 			nodes = megaApi.getChildren(megaApi.getRubbishNode(), orderGetChildren);
@@ -340,7 +340,7 @@ public class RubbishBinFragmentLollipop extends Fragment implements OnClickListe
 			detector = new GestureDetectorCompat(getActivity(), new RecyclerViewOnGestureListener());
 			
 			recyclerView = (RecyclerView) v.findViewById(R.id.rubbishbin_list_view);
-			recyclerView.addItemDecoration(new SimpleDividerItemDecoration(context));
+			recyclerView.addItemDecoration(new SimpleDividerItemDecoration(context, outMetrics));
 			mLayoutManager = new MegaLinearLayoutManager(context);
 			recyclerView.setLayoutManager(mLayoutManager);
 			recyclerView.addOnItemTouchListener(this);
@@ -635,6 +635,11 @@ public class RubbishBinFragmentLollipop extends Fragment implements OnClickListe
 					else{
 						intent.putExtra("parentNodeHandle", megaApi.getParentNode(nodes.get(position)).getHandle());
 					}
+					MyAccountInfo accountInfo = ((ManagerActivityLollipop)context).getMyAccountInfo();
+					if(accountInfo!=null){
+						intent.putExtra("typeAccount", accountInfo.getAccountType());
+					}
+
 					intent.putExtra("orderGetChildren", orderGetChildren);
 					startActivity(intent);
 				}
@@ -700,7 +705,7 @@ public class RubbishBinFragmentLollipop extends Fragment implements OnClickListe
 		}
 		updateActionModeTitle();
 	}
-	
+
 	/*
 	 * Disable selection
 	 */
@@ -737,7 +742,7 @@ public class RubbishBinFragmentLollipop extends Fragment implements OnClickListe
 				emptyImageView.setVisibility(View.GONE);
 				emptyTextView.setVisibility(View.GONE);
 				if (parentNode.getHandle() == megaApi.getRubbishNode().getHandle()){
-					aB.setTitle(getString(R.string.section_rubbish_bin));	
+					aB.setTitle(getString(R.string.section_rubbish_bin));
 					log("aB.setHomeAsUpIndicator_47");
 					aB.setHomeAsUpIndicator(R.drawable.ic_menu_white);
 					((ManagerActivityLollipop)context).setFirstNavigationLevel(true);

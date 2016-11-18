@@ -228,6 +228,9 @@ public class CameraSyncService extends Service implements MegaRequestListenerInt
 							return START_NOT_STICKY;
 
 						}
+						else{
+							log("Localpath: " + localPath);
+						}
 					}
 
 					boolean isWifi = Util.isOnWifi(this);
@@ -802,15 +805,16 @@ public class CameraSyncService extends Service implements MegaRequestListenerInt
 
 					while(cursorCamera.moveToNext()){
 
-						log("while(cursorCamera.moveToNext())");
 						Media media = new Media();
 						media.filePath = cursorCamera.getString(dataColumn);
 						//			        log("Tipo de fichero:--------------------------: "+media.filePath);
 						media.timestamp = cursorCamera.getLong(timestampColumn) * 1000;
 
+						log("while(cursorCamera.moveToNext()) - media.filePath: " + media.filePath + "_localPath: " + localPath);
+
 						//Check files of the Camera Uploads
 						if (checkFile(media,localPath)){
-							log("if (checkFile(media,localPath))");
+							log("if (checkFile(media," + localPath + "))");
 							cameraFiles.add(media);
 							log("Camera Files added: "+media.filePath);
 						}
@@ -1851,14 +1855,9 @@ public class CameraSyncService extends Service implements MegaRequestListenerInt
 				Formatter.formatFileSize(CameraSyncService.this, totalSizeUploaded));
 		String title = getString(R.string.settings_camera_notif_complete);
 		Intent intent = null;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			intent = new Intent(CameraSyncService.this, ManagerActivityLollipop.class);
-			intent.putExtra(Constants.EXTRA_OPEN_FOLDER, cameraUploadHandle);
-		}
-		else{
-			intent = new Intent(CameraSyncService.this, ManagerActivity.class);
-			intent.putExtra(Constants.EXTRA_OPEN_FOLDER, cameraUploadHandle);
-		}
+		intent = new Intent(CameraSyncService.this, ManagerActivityLollipop.class);
+		intent.putExtra(Constants.EXTRA_OPEN_FOLDER, cameraUploadHandle);
+
 
 		mBuilderCompat
 				.setSmallIcon(R.drawable.ic_stat_camera_sync)
@@ -2125,20 +2124,23 @@ public class CameraSyncService extends Service implements MegaRequestListenerInt
 		log("Image sync finished: " + transfer.getFileName() + " size " + transfer.getTransferredBytes());
 		log("transfer.getPath:" + transfer.getPath());
 		log("transfer.getNodeHandle:" + transfer.getNodeHandle());
-		if (isExternalSDCard){
-			File fileToDelete = new File(transfer.getPath());
-			if (fileToDelete != null){
-				if (fileToDelete.exists()){
-					fileToDelete.delete();
-				}
-			}
-		}
+
 		if (canceled) {
 			log("Image sync cancelled: " + transfer.getFileName());
 			if((lock != null) && (lock.isHeld()))
 				try{ lock.release(); } catch(Exception ex) {}
 			if((wl != null) && (wl.isHeld()))
 				try{ wl.release(); } catch(Exception ex) {}
+
+			if (isExternalSDCard){
+				File fileToDelete = new File(transfer.getPath());
+				if (fileToDelete != null){
+					if (fileToDelete.exists()){
+						fileToDelete.delete();
+					}
+				}
+			}
+
 			CameraSyncService.this.cancel();
 		}
 		else{
@@ -2193,6 +2195,15 @@ public class CameraSyncService extends Service implements MegaRequestListenerInt
 					log("NOT video!");
 				}
 
+				if (isExternalSDCard){
+					File fileToDelete = new File(transfer.getPath());
+					if (fileToDelete != null){
+						if (fileToDelete.exists()){
+							fileToDelete.delete();
+						}
+					}
+				}
+
 //				dbH.setCamSyncTimeStamp(currentTimeStamp);
 
 //				ArrayList<MegaNode> nLAfter = megaApi.getChildren(megaApi.getNodeByHandle(cameraUploadHandle), MegaApiJava.ORDER_ALPHABETICAL_ASC);
@@ -2214,15 +2225,8 @@ public class CameraSyncService extends Service implements MegaRequestListenerInt
 				log("OVERQUOTA ERROR: "+e.getErrorCode());
 
 				Intent intent = null;
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-					intent = new Intent(this, ManagerActivityLollipop.class);
-					intent.setAction(Constants.ACTION_OVERQUOTA_ALERT);
-				}
-				else{
-					intent = new Intent(this, ManagerActivity.class);
-					intent.setAction(ManagerActivity.ACTION_OVERQUOTA_ALERT);
-				}
-
+				intent = new Intent(this, ManagerActivityLollipop.class);
+				intent.setAction(Constants.ACTION_OVERQUOTA_ALERT);
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				startActivity(intent);
 
@@ -2290,14 +2294,8 @@ public class CameraSyncService extends Service implements MegaRequestListenerInt
 
 		Intent intent = null;
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			intent = new Intent(CameraSyncService.this, ManagerActivityLollipop.class);
-			intent.setAction(Constants.ACTION_CANCEL_CAM_SYNC);
-		}
-		else{
-			intent = new Intent(CameraSyncService.this, ManagerActivity.class);
-			intent.setAction(ManagerActivity.ACTION_CANCEL_CAM_SYNC);
-		}
+		intent = new Intent(CameraSyncService.this, ManagerActivityLollipop.class);
+		intent.setAction(Constants.ACTION_CANCEL_CAM_SYNC);
 
 		String info = Util.getProgressSize(CameraSyncService.this, progress, totalSizeToUpload);
 

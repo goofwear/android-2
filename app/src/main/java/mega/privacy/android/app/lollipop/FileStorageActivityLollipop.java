@@ -441,7 +441,7 @@ public class FileStorageActivityLollipop extends PinActivityLollipop implements 
 		cancelButton.setLayoutParams(cancelTextParams);		
 		
 		listView = (RecyclerView) findViewById(R.id.file_storage_list_view);
-		listView.addItemDecoration(new SimpleDividerItemDecoration(this));
+		listView.addItemDecoration(new SimpleDividerItemDecoration(this, outMetrics));
 		mLayoutManager = new MegaLinearLayoutManager(this);
 		listView.addOnItemTouchListener(this);
 		listView.setLayoutManager(mLayoutManager);
@@ -455,8 +455,17 @@ public class FileStorageActivityLollipop extends PinActivityLollipop implements 
 		}
 
 		dbH = DatabaseHandler.getDbHandler(getApplicationContext());
-		
-		root = new File(Environment.getExternalStorageDirectory().toString());
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			root = new File(Environment.getExternalStorageDirectory().toString());
+			if (root == null){
+				root = new File("/");
+			}
+		}
+		else{
+			root = new File("/");
+		}
+
 				
 		prefs = dbH.getPreferences();
 		if (prefs == null){

@@ -150,16 +150,18 @@ public class FolderLinkActivityLollipop extends PinActivityLollipop implements M
 	        int position = listView.getChildPosition(view);
 
 	        // handle long press
-			if (adapterList.getPositionClicked() == -1){
-				adapterList.setMultipleSelect(true);
-			
-				actionMode = startSupportActionMode(new ActionBarCallBack());			
+			if (adapterList != null) {
+				if (adapterList.getPositionClicked() == -1) {
+					adapterList.setMultipleSelect(true);
 
-				optionsBar.setVisibility(View.GONE);
-				separator.setVisibility(View.GONE);
-				
-		        itemClick(position);
-			}  
+					actionMode = startSupportActionMode(new ActionBarCallBack());
+
+					optionsBar.setVisibility(View.GONE);
+					separator.setVisibility(View.GONE);
+
+					itemClick(position);
+				}
+			}
 	        super.onLongPress(e);
 	    }
 	}
@@ -314,7 +316,7 @@ public class FolderLinkActivityLollipop extends PinActivityLollipop implements M
 		detector = new GestureDetectorCompat(this, new RecyclerViewOnGestureListener());
 		
 		listView = (RecyclerView) findViewById(R.id.folder_link_list_view_browser);
-		listView.addItemDecoration(new SimpleDividerItemDecoration(this));
+		listView.addItemDecoration(new SimpleDividerItemDecoration(this, outMetrics));
 		mLayoutManager = new MegaLinearLayoutManager(this);
 		listView.setLayoutManager(mLayoutManager);
 		listView.addOnItemTouchListener(this);
